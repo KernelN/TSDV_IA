@@ -4,19 +4,18 @@ using UnityEngine;
 
 namespace IA.FSM.States
 {
-    public class State : ScriptableObject
+    public abstract class State : ScriptableObject
     {
         internal FSMData fsmData;
         internal int index = -1;
-        internal List<Action> behaviours;
+        internal List<Action> behaviours; //extra behaviours, not other states
+        
+        public Action<int> FlagCalled; //extra behaviours, not other states
 
         public int pIndex { get { return index; } }
 
         //Setters
-        public void SetFSMData(FSMData _fsmData)
-        {
-            fsmData = _fsmData;
-        }
+        public abstract void SetFSMData(FSMData _fsmData);
         public void SetIndex(int _index)
         {
             index = _index;
@@ -52,5 +51,6 @@ namespace IA.FSM.States
             }
         }
         internal virtual void DoMainBehaviour() {}
+        internal abstract void CallFlag();
     }
 }

@@ -26,7 +26,7 @@ namespace IA.Examples
             _Count
         }
 
-        [Header("Set Values")]
+        /*[Header("Set Values")]
         [SerializeField] GameObject mine;
         [SerializeField] GameObject deposit;
         [SerializeField] GameObject minerPrefab;
@@ -150,6 +150,6 @@ namespace IA.Examples
                 else
                     fsm.SetFlag((int)Flags.OnReachDeposit);
             }
-        }
+        }*/
     }
 }

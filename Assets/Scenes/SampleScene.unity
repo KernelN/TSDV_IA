@@ -793,19 +793,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 1938269393}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0b9b7bbb2ff564489e3f379b3829f56, type: 3}
+  m_Script: {fileID: 11500000, guid: e9ed140fa3cb24c418f329b48e8deb1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  states:
-  - {fileID: 11400000, guid: 2fee4f0a41fc38548ab76c3370f73d69, type: 2}
-  - {fileID: 11400000, guid: eebdcc385fb94714dbb5c6385b66cf91, type: 2}
-  data:
-    agent: {fileID: 1938269397}
-    gold: {fileID: 12415392}
-    deposit: {fileID: 217599918}
-    moveSpeed: 5
-    mineSpeed: 0
-  index: 0
+  fsm:
+    states:
+    - {fileID: 11400000, guid: 2fee4f0a41fc38548ab76c3370f73d69, type: 2}
+    - {fileID: 11400000, guid: eebdcc385fb94714dbb5c6385b66cf91, type: 2}
+    currentStateIndex: 0
+    relations:
+    - source: {fileID: 11400000, guid: 2fee4f0a41fc38548ab76c3370f73d69, type: 2}
+      triggers:
+      - flag: 0
+        target: {fileID: 11400000, guid: eebdcc385fb94714dbb5c6385b66cf91, type: 2}
+    - source: {fileID: 11400000, guid: eebdcc385fb94714dbb5c6385b66cf91, type: 2}
+      triggers:
+      - flag: 0
+        target: {fileID: 11400000, guid: 2fee4f0a41fc38548ab76c3370f73d69, type: 2}
+    data:
+      agent: {fileID: 1938269397}
+      gold: {fileID: 12415392}
+      deposit: {fileID: 217599918}
+      moveSpeed: 5
+      mineSpeed: 1
+    currentRelation:
+      source: {fileID: 0}
+      triggers: []
 --- !u!1 &1958041981
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace IA.FSM.States
 {
-    [CreateAssetMenu(fileName = "StateGoToPoint", menuName = "States/State - Go To Point")]
-    public class State_GoToPoint : State
+    //[CreateAssetMenu(fileName = "StateGoToPoint", menuName = "States/State - Go To Point")]
+    public abstract class State_GoToPoint : State
     {
         public Vector3 point;
         public float speed;

@@ -1,3 +1,4 @@
+using IA.Examples;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,9 +8,11 @@ namespace IA.FSM
     {
         [Header("Set Values")]
         public List<States.State> states;
-        [SerializeField] Examples.MinerFSMData data;
+        [SerializeField] List<MinerRelation> relations;
+        [SerializeField] MinerFSMData data;
+        [Header("Runtime Values")]
+        [SerializeField] MinerRelation currentRelation;
         [SerializeField] int index;
-        //[Header("Runtime Values")]
 
         //Unity Events
         private void Start()

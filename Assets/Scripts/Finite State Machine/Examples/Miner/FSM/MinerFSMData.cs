@@ -1,11 +1,10 @@
-using IA.FSM;
 using System;
 using UnityEngine;
 
 namespace IA.Examples
 {
     [Serializable]
-    public class MinerFSMData : FSMData
+    public class MinerFSMData : FSM.FSMData
     {
         [SerializeField] Transform gold;
         [SerializeField] Transform deposit;

@@ -2,17 +2,22 @@ using UnityEngine;
 
 namespace IA.FSM.States
 {
-    public class State_GoToTarget : State
+    public abstract class State_GoToTarget : State
     {
         internal float speed;
         internal Transform target;
 
         internal override void DoMainBehaviour()
         {
-            SetValues();
+            if (!ValuesSetted())
+            {
+                SetValues();
+            }
+
             Move();
         }
-        internal virtual void SetValues() { }
+        internal abstract void SetValues();
+        internal abstract bool ValuesSetted();
         void Move()
         {
             //If there is no target, stop
@@ -25,7 +30,11 @@ namespace IA.FSM.States
             float newDistance = Vector3.Distance(pos + dir * speed, targetPos);
 
             //If current position is closer than next position, don't move
-            if (currentDistance < newDistance) return;
+            if (currentDistance < newDistance)
+            {
+                CallFlag();
+                return;
+            }
 
             fsmData.pAgent.position += dir * speed * Time.deltaTime;
         }

@@ -532,16 +532,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 406cc2fb59c09a94d83c95f1fcd82b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mine: {fileID: 12415388}
-  deposit: {fileID: 217599914}
-  minerPrefab: {fileID: 2189209020792810551, guid: 361f0978486820e4da1bfc8e010b23d4, type: 3}
-  minersEmpty: {fileID: 1771286863}
-  speed: 10
-  miningTime: 5
-  mineUses: 500
-  miners: 50
-  currentMiningTime: 0
-  deltaTime: 0
 --- !u!1001 &787035553
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -613,7 +603,8 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2189209020792810544, guid: 361f0978486820e4da1bfc8e010b23d4, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 361f0978486820e4da1bfc8e010b23d4, type: 3}
 --- !u!1 &1567425169
 GameObject:

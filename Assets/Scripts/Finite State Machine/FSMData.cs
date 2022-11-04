@@ -7,7 +7,7 @@ namespace IA.FSM
     public class FSMData
     {
         [Header("Set Values")]
-        [SerializeField] Transform agent;
+        public Transform agent;
         //[Header("Runtime Values")]
 
         public Transform pAgent { get { return agent; } }

@@ -1,12 +1,18 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 
 namespace IA.NeuralNetworks.Tanks
 {
     public class CustomTank : TankBase
     {
-        public bool team;
-        float fitness = 0;
+        public bool isGood;
+        [SerializeField] float fitness = 0;
+
+        public void Reset()
+        {
+            OnReset();
+        }
 
         protected override void OnReset()
         {
@@ -15,13 +21,17 @@ namespace IA.NeuralNetworks.Tanks
 
         protected override void OnThink(float dt)
         {
-            Vector3 dirToMine = GetDirToMine(nearMine);
+            Vector3 dirToGoodMine = GetDirToMine(goodMine);
+            Vector3 dirToBadMine = GetDirToMine(badMine);
             Vector3 dir = this.transform.forward;
 
-            inputs[0] = dirToMine.x;
-            inputs[1] = dirToMine.z;
-            inputs[2] = dir.x;
-            inputs[3] = dir.z;
+            inputs[0] = dirToGoodMine.x;
+            inputs[1] = dirToGoodMine.z;
+            inputs[2] = dirToBadMine.x;
+            inputs[3] = dirToBadMine.z;
+            inputs[4] = dir.x;
+            inputs[5] = dir.z;
+            inputs[6] = isGood ? 1 : -1;
 
             float[] output = brain.Synapsis(inputs);
 
@@ -32,14 +42,14 @@ namespace IA.NeuralNetworks.Tanks
         {
             MineData mineData = mine.GetComponent<MineData>();
             
-            if (mineData.team == team)
+            if (mineData.isGood == isGood)
             {
                 fitness *= 2;
                 genome.fitness = fitness;
             }
             else
             {
-                fitness *= 1.25f;
+                fitness *= 1.05f;
                 genome.fitness = fitness;
             }
         }

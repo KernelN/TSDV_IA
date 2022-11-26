@@ -5,12 +5,14 @@ using IA.NeuralNetworks.Tanks;
 
 public class PopulationManager : MonoBehaviour
 {
-    public GameObject TankPrefab;
-    public GameObject MinePrefab;
+    [SerializeField] Transform MineEmpty;
+    [SerializeField] GameObject MinePrefab;
 
     public int PopulationCount = 40;
     public int MinesCount = 50;
-
+    
+    public PopulationSettings settings;
+    
     public Vector3 SceneHalfExtents = new Vector3 (20.0f, 0.0f, 20.0f);
 
     public float GenerationDuration = 20.0f;
@@ -30,6 +32,10 @@ public class PopulationManager : MonoBehaviour
 
     GeneticAlgorithm genAlg;
 
+    public bool isGoodTeamWinning;
+    [SerializeField] TeamPopulationManager goodTeam;
+    [SerializeField] TeamPopulationManager badTeam;
+    
     List<Tank> populationGOs = new List<Tank>();
     List<Genome> population = new List<Genome>();
     List<NeuralNetwork> brains = new List<NeuralNetwork>();
@@ -40,9 +46,12 @@ public class PopulationManager : MonoBehaviour
     float accumTime = 0;
     bool isRunning = false;
 
-    public int generation {
+    public int loops {
         get; private set;
     }
+    
+    public int goodGens => goodTeam.generation;
+    public int badGens => badTeam.generation;
 
     public float bestFitness 
     {
@@ -57,41 +66,6 @@ public class PopulationManager : MonoBehaviour
     public float worstFitness 
     {
         get; private set;
-    }
-
-    private float getBestFitness()
-    {
-        float fitness = 0;
-        foreach(Genome g in population)
-        {
-            if (fitness < g.fitness)
-                fitness = g.fitness;
-        }
-
-        return fitness;
-    }
-
-    private float getAvgFitness()
-    {
-        float fitness = 0;
-        foreach(Genome g in population)
-        {
-            fitness += g.fitness;
-        }
-
-        return fitness / population.Count;
-    }
-
-    private float getWorstFitness()
-    {
-        float fitness = float.MaxValue;
-        foreach(Genome g in population)
-        {
-            if (fitness > g.fitness)
-                fitness = g.fitness;
-        }
-
-        return fitness;
     }
 
     static PopulationManager instance = null;
@@ -114,14 +88,32 @@ public class PopulationManager : MonoBehaviour
 
     void Start()
     {
+        settings = new PopulationSettings();
     }
 
     public void StartSimulation()
     {
-        // Create and confiugre the Genetic Algorithm
-        genAlg = new GeneticAlgorithm(EliteCount, MutationChance, MutationRate);
+        settings.Bias = Bias;
+        settings.P = P;
+        settings.EliteCount = EliteCount;
+        settings.GenerationDuration = GenerationDuration;
+        settings.HiddenLayers = HiddenLayers;
+        settings.InputsCount = InputsCount;
+        settings.IterationCount = IterationCount;
+        settings.MutationChance = MutationChance;
+        settings.MutationRate = MutationRate;
+        settings.OutputsCount = OutputsCount;
+        settings.SceneHalfExtents = SceneHalfExtents;
+        settings.NeuronsCountPerHL = NeuronsCountPerHL;
+        
+        goodTeam.settings = settings;
+        badTeam.settings = settings;
+        
+        goodTeam.StartSimulation();
+        badTeam.StartSimulation();
+        
+        loops = goodTeam.generation;
 
-        GenerateInitialPopulation();
         CreateMines();
 
         isRunning = true;
@@ -129,97 +121,21 @@ public class PopulationManager : MonoBehaviour
 
     public void PauseSimulation()
     {
+        goodTeam.PauseSimulation();
+        badTeam.PauseSimulation();
+        
         isRunning = !isRunning;
     }
 
     public void StopSimulation()
     {
-        isRunning = false;
-
-        generation = 0;
-
-        // Destroy previous tanks (if there are any)
-        DestroyTanks();
+        goodTeam.StopSimulation();
+        badTeam.StopSimulation();
 
         // Destroy all mines
         DestroyMines();
-    }
 
-    // Generate the random initial population
-    void GenerateInitialPopulation()
-    {
-        generation = 0;
-
-        // Destroy previous tanks (if there are any)
-        DestroyTanks();
-        
-        for (int i = 0; i < PopulationCount; i++)
-        {
-            NeuralNetwork brain = CreateBrain();
-            
-            Genome genome = new Genome(brain.GetTotalWeightsCount());
-
-            brain.SetWeights(genome.genome);
-            brains.Add(brain);
-
-            population.Add(genome);
-            populationGOs.Add(CreateTank(genome, brain));
-        }
-
-        accumTime = 0.0f;
-    }
-
-    // Creates a new NeuralNetwork
-    NeuralNetwork CreateBrain()
-    {
-        NeuralNetwork brain = new NeuralNetwork();
-
-        // Add first neuron layer that has as many neurons as inputs
-        brain.AddFirstNeuronLayer(InputsCount, Bias, P);
-
-        for (int i = 0; i < HiddenLayers; i++)
-        {
-            // Add each hidden layer with custom neurons count
-            brain.AddNeuronLayer(NeuronsCountPerHL, Bias, P);
-        }
-
-        // Add the output layer with as many neurons as outputs
-        brain.AddNeuronLayer(OutputsCount, Bias, P);
-
-        return brain;
-    }
-
-    // Evolve!!!
-    void Epoch()
-    {
-        // Increment generation counter
-        generation++;
-
-        // Calculate best, average and worst fitness
-        bestFitness = getBestFitness();
-        avgFitness = getAvgFitness();
-        worstFitness = getWorstFitness();
-
-        // Evolve each genome and create a new array of genomes
-        Genome[] newGenomes = genAlg.Epoch(population.ToArray());
-
-        // Clear current population
-        population.Clear();
-
-        // Add new population
-        population.AddRange(newGenomes);
-
-        // Set the new genomes as each NeuralNetwork weights
-        for (int i = 0; i < PopulationCount; i++)
-        {
-            NeuralNetwork brain = brains[i];
-
-            brain.SetWeights(newGenomes[i].genome);
-
-            populationGOs[i].SetBrain(newGenomes[i], brain);
-            populationGOs[i].transform.position = GetRandomPos();
-            populationGOs[i].transform.rotation = GetRandomRot();
-        }
+        isRunning = false;
     }
 
     // Update is called once per frame
@@ -232,29 +148,38 @@ public class PopulationManager : MonoBehaviour
 
         for (int i = 0; i < Mathf.Clamp((float)(IterationCount / 100.0f) * 50, 1, 50); i++)
         {
-            foreach (Tank t in populationGOs)
+            for (int j = 0; j < goodTeam.populationGOs.Count; j++)
             {
                 // Get the nearest mine
-                GameObject mine = GetNearestMine(t.transform.position);
+                GameObject mineG = GetNearestMine(goodTeam.populationGOs[i].transform.position);
+                GameObject mineB = GetNearestMine(badTeam.populationGOs[i].transform.position);
 
                 // Set the nearest mine to current tank
-                t.SetNearestMine(mine);
+                goodTeam.populationGOs[i].SetNearestMine(mineG);
+                badTeam.populationGOs[i].SetNearestMine(mineB);
 
-                mine = GetNearestGoodMine(t.transform.position);
-
-                // Set the nearest mine to current tank
-                t.SetGoodNearestMine(mine);
-
-                mine = GetNearestBadMine(t.transform.position);
+                mineG = GetNearestGoodMine(goodTeam.populationGOs[i].transform.position);
+                mineB = GetNearestGoodMine(badTeam.populationGOs[i].transform.position);
 
                 // Set the nearest mine to current tank
-                t.SetBadNearestMine(mine);
+                goodTeam.populationGOs[i].SetGoodNearestMine(mineG);
+                badTeam.populationGOs[i].SetGoodNearestMine(mineB);
+
+                mineG = GetNearestBadMine(goodTeam.populationGOs[i].transform.position);
+                mineB = GetNearestBadMine(badTeam.populationGOs[i].transform.position);
+
+                // Set the nearest mine to current tank
+                goodTeam.populationGOs[i].SetBadNearestMine(mineG);
+                badTeam.populationGOs[i].SetBadNearestMine(mineB);
 
                 // Think!! 
-                t.Think(dt);
+                goodTeam.populationGOs[i].Think(dt);
+                badTeam.populationGOs[i].Think(dt);
 
-                // Just adjust tank position when reaching world extents
-                Vector3 pos = t.transform.position;
+                
+                ///////////
+                // Just adjust good tank position when reaching world extents
+                Vector3 pos = goodTeam.populationGOs[i].transform.position;
                 if (pos.x > SceneHalfExtents.x)
                     pos.x -= SceneHalfExtents.x * 2;
                 else if (pos.x < -SceneHalfExtents.x)
@@ -265,31 +190,71 @@ public class PopulationManager : MonoBehaviour
                 else if (pos.z < -SceneHalfExtents.z)
                     pos.z += SceneHalfExtents.z * 2;
 
-                // Set tank position
-                t.transform.position = pos;
+                // Set good tank position
+                goodTeam.populationGOs[i].transform.position = pos;
+                
+                ///////////
+                // Just adjust bad tank position when reaching world extents
+                pos = badTeam.populationGOs[i].transform.position;
+                if (pos.x > SceneHalfExtents.x)
+                    pos.x -= SceneHalfExtents.x * 2;
+                else if (pos.x < -SceneHalfExtents.x)
+                    pos.x += SceneHalfExtents.x * 2;
+
+                if (pos.z > SceneHalfExtents.z)
+                    pos.z -= SceneHalfExtents.z * 2;
+                else if (pos.z < -SceneHalfExtents.z)
+                    pos.z += SceneHalfExtents.z * 2;
+
+                // Set bad tank position
+                badTeam.populationGOs[i].transform.position = pos;
             }
 
             // Check the time to evolve
             accumTime += dt;
             if (accumTime >= GenerationDuration)
             {
-                accumTime -= GenerationDuration;
-                Epoch();
+                accumTime = 0;
+                
+                //Check winning team
+                float goodTeamFit = goodTeam.getAvgFitness();
+                float badTeamFit = badTeam.getAvgFitness();
+                isGoodTeamWinning = goodTeamFit > badTeamFit;
+
+                if (isGoodTeamWinning)
+                {
+                    //Reset Good Team fitness (without evolving)
+                    goodTeam.RestartGen();
+                    
+                    //Evolve bad team (because good evolved enough to win)
+                    badTeam.Epoch();
+                    
+                    bestFitness = goodTeam.bestFitness;
+                    avgFitness = goodTeamFit;
+                    worstFitness = goodTeam.worstFitness;
+                }
+                else
+                {
+                    //Reset Bad Team fitness (without evolving)
+                    badTeam.RestartGen();
+                    
+                    //Evolve good team (because bad evolved enough to win)
+                    goodTeam.Epoch();
+                    
+                    //Set watch values
+                    bestFitness = badTeam.bestFitness;
+                    avgFitness = badTeamFit;
+                    worstFitness = badTeam.worstFitness;
+                }
+                
+                loops++;
+                
                 break;
             }
         }
 	}
 
 #region Helpers
-    Tank CreateTank(Genome genome, NeuralNetwork brain)
-    {
-        Vector3 position = GetRandomPos();
-        GameObject go = Instantiate<GameObject>(TankPrefab, position, GetRandomRot());
-        Tank t = go.GetComponent<Tank>();
-        t.SetBrain(genome, brain);
-        return t;
-    }
-
     void DestroyMines()
     {
         foreach (GameObject go in mines)
@@ -300,16 +265,6 @@ public class PopulationManager : MonoBehaviour
         badMines.Clear();
     }
 
-    void DestroyTanks()
-    {
-        foreach (Tank go in populationGOs)
-            Destroy(go.gameObject);
-
-        populationGOs.Clear();
-        population.Clear();
-        brains.Clear();
-    }
-
     void CreateMines()
     {
         // Destroy previous created mines
@@ -318,7 +273,7 @@ public class PopulationManager : MonoBehaviour
         for (int i = 0; i < MinesCount; i++)
         {
             Vector3 position = GetRandomPos();
-            GameObject go = Instantiate<GameObject>(MinePrefab, position, Quaternion.identity);
+            GameObject go = Instantiate<GameObject>(MinePrefab, position, Quaternion.identity, MineEmpty);
 
             bool good = Random.Range(-1.0f, 1.0f) >= 0;
 
@@ -332,7 +287,7 @@ public class PopulationManager : MonoBehaviour
     {
         MineData mine = go.GetComponent<MineData>();
 
-        mine.team = good;
+        mine.isGood = good;
         
         if (good)
         {
@@ -364,11 +319,6 @@ public class PopulationManager : MonoBehaviour
     Vector3 GetRandomPos()
     {
         return new Vector3(Random.value * SceneHalfExtents.x * 2.0f - SceneHalfExtents.x, 0.0f, Random.value * SceneHalfExtents.z * 2.0f - SceneHalfExtents.z); 
-    }
-
-    Quaternion GetRandomRot()
-    {
-        return Quaternion.AngleAxis(Random.value * 360.0f, Vector3.up);
     }
 
     GameObject GetNearestMine(Vector3 pos)

@@ -5,7 +5,10 @@ using UnityEngine.UI;
 
 public class SimulationScreen : MonoBehaviour
 {
-    public Text generationsCountTxt;
+    public Text bestTeamTxt;
+    public Text matchesCountTxt;
+    public Text goodGensCountTxt;
+    public Text badGensCountTxt;
     public Text bestFitnessTxt;
     public Text avgFitnessTxt;
     public Text worstFitnessTxt;
@@ -15,7 +18,9 @@ public class SimulationScreen : MonoBehaviour
     public Button stopBtn;
     public GameObject startConfigurationScreen;
 
-    string generationsCountText;
+    string matchesCountText;
+    string goodGensCountText;
+    string badGensCountText;
     string bestFitnessText;
     string avgFitnessText;
     string worstFitnessText;
@@ -30,14 +35,7 @@ public class SimulationScreen : MonoBehaviour
 
         timerTxt.text = string.Format(timerText, PopulationManager.Instance.IterationCount);
 
-        if (string.IsNullOrEmpty(generationsCountText))
-            generationsCountText = generationsCountTxt.text;   
-        if (string.IsNullOrEmpty(bestFitnessText))
-            bestFitnessText = bestFitnessTxt.text;   
-        if (string.IsNullOrEmpty(avgFitnessText))
-            avgFitnessText = avgFitnessTxt.text;   
-        if (string.IsNullOrEmpty(worstFitnessText))
-            worstFitnessText = worstFitnessTxt.text;   
+        SetAllTexts();
 
         pauseBtn.onClick.AddListener(OnPauseButtonClick);
         stopBtn.onClick.AddListener(OnStopButtonClick);
@@ -45,16 +43,11 @@ public class SimulationScreen : MonoBehaviour
 
     void OnEnable()
     {
-        if (string.IsNullOrEmpty(generationsCountText))
-            generationsCountText = generationsCountTxt.text;   
-        if (string.IsNullOrEmpty(bestFitnessText))
-            bestFitnessText = bestFitnessTxt.text;   
-        if (string.IsNullOrEmpty(avgFitnessText))
-            avgFitnessText = avgFitnessTxt.text;   
-        if (string.IsNullOrEmpty(worstFitnessText))
-            worstFitnessText = worstFitnessTxt.text;   
+        SetAllTexts(); 
 
-        generationsCountTxt.text = string.Format(generationsCountText, 0);
+        matchesCountTxt.text = string.Format(matchesCountText, 0);
+        goodGensCountTxt.text = string.Format(goodGensCountText, 0);
+        badGensCountTxt.text = string.Format(badGensCountText, 0);
         bestFitnessTxt.text = string.Format(bestFitnessText, 0);
         avgFitnessTxt.text = string.Format(avgFitnessText, 0);
         worstFitnessTxt.text = string.Format(worstFitnessText, 0);
@@ -81,13 +74,35 @@ public class SimulationScreen : MonoBehaviour
 
     void LateUpdate()
     {
-        if (lastGeneration != PopulationManager.Instance.generation)
+        PopulationManager popManager = PopulationManager.Instance;
+        
+        if (lastGeneration != popManager.loops)
         {
-            lastGeneration = PopulationManager.Instance.generation;
-            generationsCountTxt.text = string.Format(generationsCountText, PopulationManager.Instance.generation);
-            bestFitnessTxt.text = string.Format(bestFitnessText, PopulationManager.Instance.bestFitness);
-            avgFitnessTxt.text = string.Format(avgFitnessText, PopulationManager.Instance.avgFitness);
-            worstFitnessTxt.text = string.Format(worstFitnessText, PopulationManager.Instance.worstFitness);
+            lastGeneration = popManager.loops;
+            matchesCountTxt.text = string.Format(matchesCountText, popManager.loops);
+            goodGensCountTxt.text = string.Format(goodGensCountText, popManager.goodGens);
+            badGensCountTxt.text = string.Format(badGensCountText, popManager.badGens);
+            bestFitnessTxt.text = string.Format(bestFitnessText, popManager.bestFitness);
+            avgFitnessTxt.text = string.Format(avgFitnessText, popManager.avgFitness);
+            worstFitnessTxt.text = string.Format(worstFitnessText, popManager.worstFitness);
+
+            bestTeamTxt.text = popManager.isGoodTeamWinning ? "Good Team" : "Bad Team";
         }
+    }
+
+    void SetAllTexts()
+    {
+        if (string.IsNullOrEmpty(matchesCountText))
+            matchesCountText = matchesCountTxt.text;   
+        if (string.IsNullOrEmpty(goodGensCountText))
+            goodGensCountText = goodGensCountTxt.text;   
+        if (string.IsNullOrEmpty(badGensCountText))
+            badGensCountText = badGensCountTxt.text;   
+        if (string.IsNullOrEmpty(bestFitnessText))
+            bestFitnessText = bestFitnessTxt.text;   
+        if (string.IsNullOrEmpty(avgFitnessText))
+            avgFitnessText = avgFitnessTxt.text;   
+        if (string.IsNullOrEmpty(worstFitnessText))
+            worstFitnessText = worstFitnessTxt.text;  
     }
 }

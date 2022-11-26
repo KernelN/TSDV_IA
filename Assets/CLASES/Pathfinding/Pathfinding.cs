@@ -4,38 +4,38 @@ using UnityEngine;
 
 public class Pathfinder
 {
-    public List<Vector2Int> GetPath(Node[] map, Node origin, Node destination)
+    public List<Vector2Int> GetPath(PathNode[] map, PathNode origin, PathNode destination)
     {
-        Node currentNode = origin;
-        while (currentNode.position != destination.position)
+        PathNode currentPathNode = origin;
+        while (currentPathNode.position != destination.position)
         {
-            currentNode.state = Node.NodeState.Closed;
+            currentPathNode.state = PathNode.NodeState.Closed;
 
-            for (int i = 0; i < currentNode.adjacentNodeIDs.Count; i++)
+            for (int i = 0; i < currentPathNode.adjacentNodeIDs.Count; i++)
             {
-                if (currentNode.adjacentNodeIDs[i] != -1)
+                if (currentPathNode.adjacentNodeIDs[i] != -1)
                 {
-                    if (map[currentNode.adjacentNodeIDs[i]].state == Node.NodeState.Ready)
+                    if (map[currentPathNode.adjacentNodeIDs[i]].state == PathNode.NodeState.Ready)
                     {
-                        map[currentNode.adjacentNodeIDs[i]].Open(currentNode.ID);
+                        map[currentPathNode.adjacentNodeIDs[i]].Open(currentPathNode.ID);
                     }
                 }
             }
 
-            currentNode = GetNextNode(map, currentNode);
-            if (currentNode == null)
+            currentPathNode = GetNextNode(map, currentPathNode);
+            if (currentPathNode == null)
                 return new List<Vector2Int>();
         }
 
-        List<Vector2Int> path = GeneratePath(map, origin, currentNode);
-        foreach (Node node in map)
+        List<Vector2Int> path = GeneratePath(map, origin, currentPathNode);
+        foreach (PathNode node in map)
         {
             node.Reset();
         }
         return path;
     }
 
-    private List<Vector2Int> GeneratePath(Node[] map, Node origin, Node current)
+    private List<Vector2Int> GeneratePath(PathNode[] map, PathNode origin, PathNode current)
     {
         List<Vector2Int> path = new List<Vector2Int>();
 
@@ -51,26 +51,26 @@ public class Pathfinder
         return path;
     }
 
-    private Node GetNextNode(Node[] map, Node currentNode)
+    private PathNode GetNextNode(PathNode[] map, PathNode currentPathNode)
     {
-        for (int i = 0; i < currentNode.adjacentNodeIDs.Count; i++)
+        for (int i = 0; i < currentPathNode.adjacentNodeIDs.Count; i++)
         {
-            if (currentNode.adjacentNodeIDs[i] != -1)
+            if (currentPathNode.adjacentNodeIDs[i] != -1)
             {
-                if (map[currentNode.adjacentNodeIDs[i]].state == Node.NodeState.Open)
+                if (map[currentPathNode.adjacentNodeIDs[i]].state == PathNode.NodeState.Open)
                 {
                     //You should try every OPEN node, even if it wasn't opened by you
                     //if (map[currentNode.adjacentNodeIDs[i]].openerID == currentNode.ID)
                     {
-                        return map[currentNode.adjacentNodeIDs[i]];
+                        return map[currentPathNode.adjacentNodeIDs[i]];
                     }
                 }
             }
         }
 
-        if (currentNode.openerID == -1)
+        if (currentPathNode.openerID == -1)
             return null;
 
-        return GetNextNode(map, map[currentNode.openerID]);
+        return GetNextNode(map, map[currentPathNode.openerID]);
     }
 }

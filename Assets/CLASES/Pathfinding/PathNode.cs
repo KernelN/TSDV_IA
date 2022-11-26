@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-public class Node
+public class PathNode
 {
     public enum NodeState 
     {
@@ -15,7 +15,7 @@ public class Node
     public List<int> adjacentNodeIDs;
     public NodeState state;
     public int openerID;
-    public Node(int ID, Vector2Int position)
+    public PathNode(int ID, Vector2Int position)
     {
         this.ID = ID;
         this.position = position;

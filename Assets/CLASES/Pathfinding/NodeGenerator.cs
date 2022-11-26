@@ -8,7 +8,7 @@ public class NodeGenerator : MonoBehaviour
 {
     public Vector2Int mapSize;
     [SerializeField] List<Vector2Int> blockedNodes;
-    private Node[] map;
+    private PathNode[] map;
     private Pathfinder pathfinder;
     List<Vector2Int> path;
     // Start is called before the first frame update
@@ -16,13 +16,13 @@ public class NodeGenerator : MonoBehaviour
     {
         pathfinder = new Pathfinder();
         NodeUtils.MapSize = mapSize;
-        map = new Node[mapSize.x * mapSize.y];
+        map = new PathNode[mapSize.x * mapSize.y];
         int ID = 0;
         for (int i = 0; i < mapSize.y; i++)
         {
             for (int j = 0; j < mapSize.x; j++)
             {
-                map[ID] = new Node(ID, new Vector2Int(j, i));
+                map[ID] = new PathNode(ID, new Vector2Int(j, i));
                 if (blockedNodes.Contains(new Vector2Int(i, j)))
                     map[ID].Block();
                 ID++;
@@ -45,10 +45,10 @@ public class NodeGenerator : MonoBehaviour
             return;
         Gizmos.color = Color.green;
         GUIStyle style = new GUIStyle() { fontSize = 25  };
-        foreach (Node node in map)
+        foreach (PathNode node in map)
         {
             Vector3 worldPosition = new Vector3((float)node.position.x, (float)node.position.y, 0.0f);
-            if (node.state == Node.NodeState.Blocked)
+            if (node.state == PathNode.NodeState.Blocked)
             {
                 Gizmos.color = Color.white;
                 Gizmos.DrawWireSphere(worldPosition, 0.2f);
@@ -58,12 +58,12 @@ public class NodeGenerator : MonoBehaviour
             {
                 Gizmos.DrawWireSphere(worldPosition, 0.2f);
             }
-            Handles.Label(worldPosition, node.position.ToString(), style);
+            //Handles.Label(worldPosition, node.position.ToString(), style);
         }
 
         if (path == null) return;
 
-        List<Node> nodePath = new List<Node>();
+        List<PathNode> nodePath = new List<PathNode>();
 
         foreach (var pos in path)
         {
@@ -72,7 +72,7 @@ public class NodeGenerator : MonoBehaviour
 
 
         Gizmos.color = Color.red;
-        foreach (Node node in nodePath)
+        foreach (PathNode node in nodePath)
         {
             Vector3 worldPosition = new Vector3((float)node.position.x, (float)node.position.y, 0.0f);
             Gizmos.DrawWireSphere(worldPosition, 0.2f);
